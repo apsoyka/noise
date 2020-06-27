@@ -84,7 +84,7 @@ ImageHeader Writer::image_header(int width, int height, int size, int ppm) {
 
     image_header.header_size = sizeof(image_header);
     image_header.width = width;
-    image_header.height = height;
+    image_header.height = -height;
     image_header.colour_planes = 1;
     image_header.colour_depth = 24;
     image_header.compression = 0;
