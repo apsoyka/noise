@@ -9,7 +9,7 @@ struct Pixel {
 
 struct Image {
     Pixel *pixels;
-    int width, height, dpi;
+    int width, height, ppm;
 };
 
 string &ltrim(string &string, const std::string characters = "\t\n\v\f\r ");

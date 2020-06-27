@@ -1,5 +1,6 @@
 #include <iostream>
 #include "parser.h"
+#include "configuration.h"
 #include "utilities.h"
 
 static const string usage_simple = R"(
@@ -15,8 +16,9 @@ Usage: noise [OPTION]... SOURCE DEST
 Mandatory arguments to long options are mandatory for short options too.
 
 General:
-  -V,  --version        display the version of Noise and exit
   -h,  --help           print this help
+  -V,  --version        display the version of Noise and exit
+  -v,  --verbose        print verbose output
 
 Format:
   -W,  --width=WIDTH    set the width in pixels of the image to generate
@@ -26,8 +28,7 @@ Format:
 
 static ExitStatus exit_status;
 
-Configuration Parser::parse(int argc, char *argv[]) {
-    Configuration configuration;
+void Parser::parse(int argc, char *argv[]) {
     vector<string> arguments;
     vector<string> files;
 
@@ -52,25 +53,26 @@ Configuration Parser::parse(int argc, char *argv[]) {
             print("0.0.0");
             exit(exit_status);
         }
+        else if (contains(argument, {"-v", "--verbose"}))
+            Configuration::set_verbose(true);
         else if (contains(argument, {"-W", "--width"})) {
             auto n = parse_int(argument);
-            if (n > 0) configuration.width = n;
+            if (n > 0) Configuration::set_width(n);
         }
         else if (contains(argument, {"-H", "--height"})) {
             auto n = parse_int(argument);
-            if (n > 0) configuration.height = n;
+            if (n > 0) Configuration::set_height(n);
         }
         else if (contains(argument, {"-D", "--dpi"})) {
             auto n = parse_int(argument);
-            if (n > 0) configuration.dpi = n;
+            if (n > 0) Configuration::set_dpi(n);
         }
         else
             files.push_back(argument);
     }
 
-    configuration.source = files[0];
-    configuration.destination = files[1];
-    return configuration;
+    Configuration::set_source(files[0]);
+    Configuration::set_destination(files[1]);
 }
 
 int Parser::parse_int(string string) {

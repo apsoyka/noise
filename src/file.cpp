@@ -1,12 +1,17 @@
 #include <fstream>
 #include "file.h"
+#include "configuration.h"
+#include "log.h"
 
-unsigned char *Reader::read(string path, long *size) {
+const string Reader::tag = "Reader";
+
+unsigned char *Reader::read(long *size) {
     ifstream file;
     unsigned char *buffer;
+    auto source = Configuration::get_source();
 
     // Open file at the end.
-    file.open(path, ios::in | ios::binary | ios::ate);
+    file.open(source, ios::in | ios::binary | ios::ate);
 
     // Read the file into memory.
     if (file.is_open()) {
@@ -15,25 +20,29 @@ unsigned char *Reader::read(string path, long *size) {
         file.seekg (0, ios::beg);
         file.read ((char *)buffer, *size);
         file.close();
+
+        Log::verbose(tag, "Read " + to_string(*size) + " bytes from " + source + '.');
     }
 
     return buffer;
 }
 
-void Writer::write(string path, Image image) {
+const string Writer::tag = "Writer";
+
+void Writer::write(Image image) {
     ofstream file;
+    auto destination = Configuration::get_destination();
 
     // Open file in binary, truncate and output mode.
-    file.open(path, ios::out | ios::binary | ios::trunc);
+    file.open(destination, ios::out | ios::binary | ios::trunc);
 
     // Write all data to file.
     if (file.is_open()) {
         auto image_size = image.width * image.height;
         auto file_size = 54 + 4 * image_size;
-        auto ppm = image.dpi * 39.375;
 
         auto f_header = file_header(file_size);
-        auto i_header = image_header(image.width, image.height, file_size, ppm);
+        auto i_header = image_header(image.width, image.height, file_size, image.ppm);
 
         file.write((char *)&f_header, 14);
         file.write((char *)&i_header, sizeof(i_header));
@@ -53,6 +62,8 @@ void Writer::write(string path, Image image) {
         }
 
         file.close();
+
+        Log::verbose(tag, "Wrote " + to_string(file_size) + " bytes to " + destination + '.');
     }
 }
 

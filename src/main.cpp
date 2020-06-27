@@ -4,6 +4,8 @@
 
 using namespace std;
 
+static const auto tag = "Main";
+
 int main(int argc, char *argv[]) {
     Parser parser;
     Reader reader;
@@ -12,16 +14,16 @@ int main(int argc, char *argv[]) {
     long buffer_size;
 
     // Parse command line arguments.
-    auto configuration = parser.parse(argc, argv);
+    parser.parse(argc, argv);
 
     // Read source file into memory.
-    auto buffer = reader.read(configuration.source, &buffer_size);
+    auto buffer = reader.read(&buffer_size);
 
     // Convert byte data to pixels.
-    auto image = transcoder.transcode(buffer, buffer_size, configuration.width, configuration.height, configuration.dpi);
+    auto image = transcoder.transcode(buffer, buffer_size);
 
     delete[] buffer;
 
     // Write all image data to file.
-    writer.write(configuration.destination, image);
+    writer.write(image);
 }

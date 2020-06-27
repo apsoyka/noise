@@ -8,14 +8,9 @@ enum ExitStatus {
     FAILURE = EXIT_FAILURE
 };
 
-struct Configuration {
-    int width{0}, height{0}, dpi{96};
-    string source, destination;
-};
-
 class Parser {
     public:
-        Configuration parse(int, char *[]);
+        void parse(int, char *[]);
     private:
         int parse_int(string);
         void print(string);

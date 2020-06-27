@@ -1,6 +1,13 @@
 #include "transcoder.h"
+#include "configuration.h"
+#include "log.h"
 
-Image Transcoder::transcode(unsigned char *buffer, long buffer_size, int width, int height, int dpi) {
+const string Transcoder::tag = "Transcoder";
+
+Image Transcoder::transcode(unsigned char *buffer, long buffer_size) {
+    int width = Configuration::get_width();
+    int height = Configuration::get_height();
+
     // Automatically determine resolution from file size if width and height aren't set.
     if (width < 1 || height < 1) {
         auto square = sqrt(buffer_size);
@@ -17,6 +24,8 @@ Image Transcoder::transcode(unsigned char *buffer, long buffer_size, int width, 
         auto truncated = new unsigned char [image_size];
         memcpy(truncated, buffer, image_size);
         buffer = truncated;
+
+        Log::verbose(tag, "Truncated " + to_string(buffer_size - image_size) + " bytes of data.");
     }
 
     auto pixels = new Pixel[image_size];
@@ -33,5 +42,7 @@ Image Transcoder::transcode(unsigned char *buffer, long buffer_size, int width, 
         }
     }
 
-    return Image {pixels, width, height, dpi};
+    Log::verbose(tag, "Generated an image of " + to_string(width) + 'x' + to_string(height) + " pixels.");
+
+    return Image {pixels, width, height, static_cast<int>(Configuration::get_dpi() * 39.375)};
 }

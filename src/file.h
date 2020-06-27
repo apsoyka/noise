@@ -26,13 +26,16 @@ struct ImageHeader {
 
 class Reader {
     public:
-        unsigned char *read(string, long *);
+        unsigned char *read(long *);
+    private:
+        static const string tag;
 };
 
 class Writer {
     public:
-        void write(string, Image);
+        void write(Image);
     private:
         FileHeader file_header(int);
         ImageHeader image_header(int, int, int, int);
+        static const string tag;
 };
