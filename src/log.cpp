@@ -24,7 +24,7 @@ void Log::info(string tag, string message) {
 }
 
 void Log::debug(string tag, string message) {
-    #ifndef NDEBUG
+    #ifndef DEBUG
     println(DEBUG, tag, message);
     #endif
 }
