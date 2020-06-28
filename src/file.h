@@ -15,5 +15,6 @@ class Writer {
     private:
         unsigned char *file_header(int);
         unsigned char *image_header(int, int, int, int);
+        unsigned char *colour_table();
         static const string tag;
 };

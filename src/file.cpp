@@ -38,30 +38,31 @@ void Writer::write(Image image) {
 
     // Write all data to file.
     if (file.is_open()) {
-        auto padding = 4 - ((image.width * 3) % 4);
+        auto padding = 4 - (image.width % 4);
 
         if (padding == 4)
             padding = 0;
         else
             Log::debug(tag, "Adding " + to_string(padding) + " padding bytes to each row");
 
-        auto image_size = ((image.width * 3) + padding) * image.height;
-        auto file_size = image_size + 14 + 40;
+        auto image_size = (image.width + padding) * image.height;
+        auto file_size = image_size + 14 + 40 + 1024;
 
         // Generate header data.
         auto f_header = (char *)file_header(file_size);
         auto i_header = (char *)image_header(image.width, image.height, image_size, image.ppm);
+        auto c_table = (char *)colour_table();
 
         // Write headers to file.
         file.write(f_header, 14);
         file.write(i_header, 40);
+        file.write(c_table, 1024);
 
         // Write pixel data to file.
         for (auto y = image.height - 1; y >= 0; y--) {
             for (auto x = 0; x < image.width; x++) {
                 auto a = y * image.width + x;
-                auto current = image.pixels[a];
-                file << current.blue << current.green << current.red;
+                file << image.pixels[a];
             }
             // Write extra padding bytes if necessary.
             if (padding)
@@ -84,7 +85,7 @@ unsigned char *Writer::file_header(int size) {
     file_header[3] = size >> 8;
     file_header[4] = size >> 16;
     file_header[5] = size >> 24;
-    file_header[10] = 14 + 40;
+    file_header[10] = 14 + 40 + 1024;
 
     return file_header;
 }
@@ -102,7 +103,7 @@ unsigned char *Writer::image_header(int width, int height, int size, int ppm) {
     image_header[10] = height >> 16;
     image_header[11] = height >> 24;
     image_header[12] = 1;
-    image_header[14] = 24;
+    image_header[14] = 8;
     image_header[20] = size;
     image_header[21] = size >> 8;
     image_header[22] = size >> 16;
@@ -117,4 +118,19 @@ unsigned char *Writer::image_header(int width, int height, int size, int ppm) {
     image_header[31] = ppm >> 24;
 
     return image_header;
+}
+
+unsigned char *Writer::colour_table() {
+    auto colour_table = new unsigned char[1024] {};
+
+    for (int i = 0; i < 256; i++) {
+        auto n = 4 * i;
+
+        colour_table[n] = i;
+        colour_table[n + 1] = i;
+        colour_table[n + 2] = i;
+        colour_table[n + 3] = 0;
+    }
+
+    return colour_table;
 }

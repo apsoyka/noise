@@ -3,12 +3,8 @@
 
 using namespace std;
 
-struct Pixel {
-    unsigned char red, green, blue;
-};
-
 struct Image {
-    Pixel *pixels;
+    unsigned char *pixels;
     int width, height, ppm;
 };
 
