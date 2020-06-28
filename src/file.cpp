@@ -46,15 +46,15 @@ void Writer::write(Image image) {
             Log::debug(tag, "Adding " + to_string(padding) + " padding bytes to each row");
 
         auto image_size = ((image.width * 3) + padding) * image.height;
-        auto file_size = image_size + 54;
+        auto file_size = image_size + 14 + 40;
 
         // Generate header data.
-        auto f_header = file_header(file_size);
-        auto i_header = image_header(image.width, image.height, image_size, image.ppm);
+        auto f_header = (char *)file_header(file_size);
+        auto i_header = (char *)image_header(image.width, image.height, image_size, image.ppm);
 
         // Write headers to file.
-        file.write((char *)&f_header, 14);
-        file.write((char *)&i_header, 40);
+        file.write(f_header, 14);
+        file.write(i_header, 40);
 
         // Write pixel data to file.
         for (auto y = image.height - 1; y >= 0; y--) {
@@ -75,32 +75,46 @@ void Writer::write(Image image) {
     }
 }
 
-FileHeader Writer::file_header(int size) {
-    FileHeader file_header;
+unsigned char *Writer::file_header(int size) {
+    auto file_header = new unsigned char[14] {};
 
-    memcpy(&file_header.bitmap_type, "BM", 2);
-    file_header.file_size = size;
-    file_header.reserved_1 = 0;
-    file_header.reserved_2 = 0;
-    file_header.offset = 0;
+    file_header[0] = 'B';
+    file_header[1] = 'M';
+    file_header[2] = size;
+    file_header[3] = size >> 8;
+    file_header[4] = size >> 16;
+    file_header[5] = size >> 24;
+    file_header[10] = 14 + 40;
 
     return file_header;
 }
 
-ImageHeader Writer::image_header(int width, int height, int size, int ppm) {
-    ImageHeader image_header;
+unsigned char *Writer::image_header(int width, int height, int size, int ppm) {
+    auto image_header = new unsigned char[40] {};
 
-    image_header.header_size = 40;
-    image_header.width = width;
-    image_header.height = height;
-    image_header.colour_planes = 1;
-    image_header.colour_depth = 24;
-    image_header.compression = 0;
-    image_header.image_size = size;
-    image_header.horizontal_resolution = ppm;
-    image_header.vertical_resolution = ppm;
-    image_header.colour_palette = 0;
-    image_header.important_colours = 0;
+    image_header[0] = 40;
+    image_header[4] = width;
+    image_header[5] = width >> 8;
+    image_header[6] = width >> 16;
+    image_header[7] = width >> 24;
+    image_header[8] = height;
+    image_header[9] = height >> 8;
+    image_header[10] = height >> 16;
+    image_header[11] = height >> 24;
+    image_header[12] = 1;
+    image_header[14] = 24;
+    image_header[20] = size;
+    image_header[21] = size >> 8;
+    image_header[22] = size >> 16;
+    image_header[23] = size >> 24;
+    image_header[24] = ppm;
+    image_header[25] = ppm >> 8;
+    image_header[26] = ppm >> 16;
+    image_header[27] = ppm >> 24;
+    image_header[28] = ppm;
+    image_header[29] = ppm >> 8;
+    image_header[30] = ppm >> 16;
+    image_header[31] = ppm >> 24;
 
     return image_header;
 }
