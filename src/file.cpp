@@ -46,10 +46,11 @@ void Writer::write(Image image) {
             Log::debug(tag, "Adding " + to_string(padding) + " padding bytes to each row");
 
         auto image_size = (image.width + padding) * image.height;
-        auto file_size = image_size + 14 + 40 + 1024;
+        auto offset = 14 + 40 + 1024;
+        auto file_size = image_size + offset;
 
         // Generate header data.
-        auto f_header = (char *)file_header(file_size);
+        auto f_header = (char *)file_header(file_size, offset);
         auto i_header = (char *)image_header(image.width, image.height, image_size, image.ppm);
         auto c_table = (char *)colour_table();
 
@@ -76,7 +77,7 @@ void Writer::write(Image image) {
     }
 }
 
-unsigned char *Writer::file_header(int size) {
+unsigned char *Writer::file_header(int size, int offset) {
     auto file_header = new unsigned char[14] {};
 
     file_header[0] = 'B';
@@ -85,7 +86,10 @@ unsigned char *Writer::file_header(int size) {
     file_header[3] = size >> 8;
     file_header[4] = size >> 16;
     file_header[5] = size >> 24;
-    file_header[10] = 14 + 40 + 1024;
+    file_header[10] = offset;
+    file_header[11] = offset >> 8;
+    file_header[12] = offset >> 16;
+    file_header[13] = offset >> 24;
 
     return file_header;
 }
