@@ -21,7 +21,7 @@ unsigned char *Reader::read(long *size) {
         file.read ((char *)buffer, *size);
         file.close();
 
-        Log::verbose(tag, "Read " + to_string(*size) + " bytes from " + source + '.');
+        Log::verbose(tag, "Read " + to_string(*size) + " bytes from " + source);
     }
 
     return buffer;
@@ -38,32 +38,40 @@ void Writer::write(Image image) {
 
     // Write all data to file.
     if (file.is_open()) {
-        auto image_size = image.width * image.height;
-        auto file_size = 54 + 4 * image_size;
+        auto padding = 4 - ((image.width * 3) % 4);
 
-        auto f_header = file_header(file_size);
-        auto i_header = image_header(image.width, image.height, file_size, image.ppm);
+        if (padding == 4)
+            padding = 0;
+        else
+            Log::debug(tag, "Adding " + to_string(padding) + " padding bytes to each row");
 
+        // auto image_size = image.width * image.height;
+        auto image_size = ((image.width * 3) + padding) * image.height;
+
+        // Generate header data.
+        auto f_header = file_header(image_size + 54);
+        auto i_header = image_header(image.width, image.height, image_size, image.ppm);
+
+        // Write headers to file.
         file.write((char *)&f_header, 14);
         file.write((char *)&i_header, sizeof(i_header));
 
-        for (auto i = 0; i < image_size; i++) {
-            auto current = image.pixels[i];
-            auto red = (current.red);
-            auto green = (current.green);
-            auto blue = (current.blue);
-            unsigned char colour[] = {
-                blue,
-                green,
-                red
-            };
-            
-            file.write((char *)colour, sizeof(colour));
+        // Write pixel data to file.
+        for (auto y = image.height - 1; y >= 0; y--) {
+            for (auto x = 0; x < image.width; x++) {
+                auto a = y * image.width + x;
+                auto current = image.pixels[a];
+                file << current.blue << current.green << current.red;
+            }
+            // Write extra padding bytes if necessary.
+            if (padding)
+                for (auto i = 1; i <= padding; i++)
+                    file << 0;
         }
 
         file.close();
 
-        Log::verbose(tag, "Wrote " + to_string(file_size) + " bytes to " + destination + '.');
+        Log::verbose(tag, "Wrote " + to_string(image_size + 54) + " bytes to " + destination);
     }
 }
 
@@ -84,7 +92,7 @@ ImageHeader Writer::image_header(int width, int height, int size, int ppm) {
 
     image_header.header_size = sizeof(image_header);
     image_header.width = width;
-    image_header.height = -height;
+    image_header.height = height;
     image_header.colour_planes = 1;
     image_header.colour_depth = 24;
     image_header.compression = 0;
