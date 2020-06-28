@@ -45,16 +45,16 @@ void Writer::write(Image image) {
         else
             Log::debug(tag, "Adding " + to_string(padding) + " padding bytes to each row");
 
-        // auto image_size = image.width * image.height;
         auto image_size = ((image.width * 3) + padding) * image.height;
+        auto file_size = image_size + 54;
 
         // Generate header data.
-        auto f_header = file_header(image_size + 54);
+        auto f_header = file_header(file_size);
         auto i_header = image_header(image.width, image.height, image_size, image.ppm);
 
         // Write headers to file.
         file.write((char *)&f_header, 14);
-        file.write((char *)&i_header, sizeof(i_header));
+        file.write((char *)&i_header, 40);
 
         // Write pixel data to file.
         for (auto y = image.height - 1; y >= 0; y--) {
@@ -71,7 +71,7 @@ void Writer::write(Image image) {
 
         file.close();
 
-        Log::verbose(tag, "Wrote " + to_string(image_size + 54) + " bytes to " + destination);
+        Log::verbose(tag, "Wrote " + to_string(file_size) + " bytes to " + destination);
     }
 }
 
@@ -90,7 +90,7 @@ FileHeader Writer::file_header(int size) {
 ImageHeader Writer::image_header(int width, int height, int size, int ppm) {
     ImageHeader image_header;
 
-    image_header.header_size = sizeof(image_header);
+    image_header.header_size = 40;
     image_header.width = width;
     image_header.height = height;
     image_header.colour_planes = 1;
