@@ -4,7 +4,7 @@
 using namespace std;
 
 struct Image {
-    unsigned char *pixels;
+    unsigned char **pixels;
     int width, height, ppm;
 };
 

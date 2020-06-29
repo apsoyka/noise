@@ -61,10 +61,8 @@ void Writer::write(Image image) {
 
         // Write pixel data to file.
         for (auto y = image.height - 1; y >= 0; y--) {
-            for (auto x = 0; x < image.width; x++) {
-                auto a = y * image.width + x;
-                file << image.pixels[a];
-            }
+            for (auto x = 0; x < image.width; x++)
+                file << image.pixels[y][x];
             // Write extra padding bytes if necessary.
             if (padding)
                 for (auto i = 1; i <= padding; i++)

@@ -17,13 +17,16 @@ Image Transcoder::transcode(unsigned char *buffer, long buffer_size) {
         height = n;
     }
 
-    auto pixels = new unsigned char[width * height];
+    auto pixels = new unsigned char *[height];
+
+    for (auto i = 0; i < height; i++)
+        pixels[i] = new unsigned char[width];
 
     // Convert each byte to a pixel.
     for (auto x = 0; x < width; x++) {
         for (auto y = 0; y < height; y++) {
             auto a = y * width + x;
-            pixels[a] = (a < buffer_size) ? buffer[a] : 0;
+            pixels[y][x] = (a < buffer_size) ? buffer[a] : 0;
         }
     }
 
