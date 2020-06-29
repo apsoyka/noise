@@ -52,7 +52,7 @@ void Writer::write(Image image) {
         // Generate header data.
         auto f_header = (char *)file_header(file_size, offset);
         auto i_header = (char *)image_header(image.width, image.height, image_size, image.ppm);
-        auto c_table = (char *)colour_table();
+        auto c_table = (char *)colour_table().data();
 
         // Write headers to file.
         file.write(f_header, 14);
@@ -122,8 +122,8 @@ unsigned char *Writer::image_header(int width, int height, int size, int ppm) {
     return image_header;
 }
 
-unsigned char *Writer::colour_table() {
-    auto colour_table = new unsigned char[1024] {};
+ColourTable Writer::colour_table() {
+    ColourTable colour_table {};
 
     for (int i = 0; i < 256; i++) {
         auto n = 4 * i;
@@ -131,7 +131,6 @@ unsigned char *Writer::colour_table() {
         colour_table[n] = i;
         colour_table[n + 1] = i;
         colour_table[n + 2] = i;
-        colour_table[n + 3] = 0;
     }
 
     return colour_table;

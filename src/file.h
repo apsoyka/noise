@@ -1,6 +1,9 @@
+#include <array>
 #include "utilities.h"
 
 using namespace std;
+
+typedef array<unsigned char, 1024> ColourTable;
 
 class Reader {
     public:
@@ -15,6 +18,6 @@ class Writer {
     private:
         unsigned char *file_header(int, int);
         unsigned char *image_header(int, int, int, int);
-        unsigned char *colour_table();
+        ColourTable colour_table();
         static const string tag;
 };
