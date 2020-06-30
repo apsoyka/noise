@@ -1,9 +1,12 @@
 #pragma once
 #include <string>
+#include <vector>
 
 using namespace std;
 
-struct Image {
+typedef vector <unsigned char> Blob;
+
+struct Bitmap {
     unsigned char **pixels;
     int width, height, ppm;
 };

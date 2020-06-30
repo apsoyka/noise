@@ -3,15 +3,15 @@
 
 using namespace std;
 
-typedef array<unsigned char, 1024> ColourTable;
+typedef array <unsigned char, 1024> ColourTable;
 
 #pragma pack(push, 1)
 struct FileHeader {
     unsigned char bitmap_type[2] {'B', 'M'};
-    unsigned int file_size;
-    unsigned short int reserved_1 {0};
-    unsigned short int reserved_2 {0};
-    unsigned int offset;
+    int file_size;
+    short int reserved_1 {0};
+    short int reserved_2 {0};
+    int offset;
 };
 #pragma pack(pop)
 
@@ -33,14 +33,14 @@ struct ImageHeader {
 
 class Reader {
     public:
-        unsigned char *read(long *);
+        Blob read();
     private:
         static const string tag;
 };
 
 class Writer {
     public:
-        void write(Image);
+        void write(Bitmap);
     private:
         static const string tag;
         FileHeader file_header(unsigned int, unsigned int);

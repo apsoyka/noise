@@ -5,32 +5,35 @@
 
 const string Reader::tag = "Reader";
 
-unsigned char *Reader::read(long *size) {
+Blob Reader::read() {
     ifstream file;
-    unsigned char *buffer;
+    Blob blob;
+
     auto source = Configuration::get_source();
 
     // Open file at the end.
-    file.open(source, ios::in | ios::binary | ios::ate);
+    file.open(source, ios::in | ios::binary);
 
     // Read the file into memory.
     if (file.is_open()) {
-        *size = file.tellg();
-        buffer = new unsigned char [*size];
-        file.seekg (0, ios::beg);
-        file.read ((char *)buffer, *size);
+        char byte;
+
+        while (file.get(byte))
+            blob.push_back(byte);
+
         file.close();
 
-        Log::verbose(tag, "Read " + to_string(*size) + " bytes from " + source);
+        Log::verbose(tag, "Read " + to_string(blob.size()) + " bytes from " + source);
     }
 
-    return buffer;
+    return blob;
 }
 
 const string Writer::tag = "Writer";
 
-void Writer::write(Image image) {
+void Writer::write(Bitmap bitmap) {
     ofstream file;
+
     auto destination = Configuration::get_destination();
 
     // Open file in binary, truncate and output mode.
@@ -38,20 +41,20 @@ void Writer::write(Image image) {
 
     // Write all data to file.
     if (file.is_open()) {
-        auto padding = 4 - (image.width % 4);
+        auto padding = 4 - (bitmap.width % 4);
 
         if (padding == 4)
             padding = 0;
         else
             Log::debug(tag, "Adding " + to_string(padding) + " padding bytes to each row");
 
-        auto image_size = (image.width + padding) * image.height;
+        auto bitmap_size = (bitmap.width + padding) * bitmap.height;
         auto offset = 14 + 40 + 1024;
-        auto file_size = image_size + offset;
+        auto file_size = bitmap_size + offset;
 
         // Generate header data.
         auto f_header = file_header(file_size, offset);
-        auto i_header = image_header(image.width, image.height, image.ppm);
+        auto i_header = image_header(bitmap.width, bitmap.height, bitmap.ppm);
         auto c_table = colour_table();
 
         // Write headers to file.
@@ -60,9 +63,9 @@ void Writer::write(Image image) {
         file.write((char *)c_table.data(), 1024);
 
         // Write pixel data to file.
-        for (auto y = image.height - 1; y >= 0; y--) {
-            for (auto x = 0; x < image.width; x++)
-                file << image.pixels[y][x];
+        for (auto y = bitmap.height - 1; y >= 0; y--) {
+            for (auto x = 0; x < bitmap.width; x++)
+                file << bitmap.pixels[y][x];
             // Write extra padding bytes if necessary.
             if (padding)
                 for (auto i = 1; i <= padding; i++)

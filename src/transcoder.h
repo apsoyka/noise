@@ -4,7 +4,7 @@ using namespace std;
 
 class Transcoder {
     public:
-        Image transcode(unsigned char *, long);
+        Bitmap transcode(Blob);
     private:
         static const string tag;
 };
