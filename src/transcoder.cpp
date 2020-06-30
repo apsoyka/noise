@@ -24,10 +24,10 @@ Bitmap Transcoder::transcode(Blob blob) {
         pixels[i] = new unsigned char[width];
 
     // Convert each byte to a pixel.
-    for (auto x = 0; x < width; x++) {
-        for (auto y = 0; y < height; y++) {
-            auto a = y * width + x;
-            pixels[y][x] = (a < size) ? blob[a] : 0;
+    for (auto y = 0; y < height; y++) {
+        for (auto x = 0; x < width; x++) {
+            auto n = y * width + x;
+            pixels[y][x] = n < size ? blob[n] : 0;
         }
     }
 

@@ -24,6 +24,7 @@ Format:
   -W,  --width=WIDTH    set the width in pixels of the image to generate
   -H,  --height=HEIGHT  set the height in pixels of the image to generate
   -D,  --dpi=DPI        set the dots-per-inch of the image to generate
+  -i,  --invert         invert the colour table
 )";
 
 static ExitStatus exit_status;
@@ -67,6 +68,8 @@ void Parser::parse(int argc, char *argv[]) {
             auto n = parse_int(argument);
             if (n > 0) Configuration::set_dpi(n);
         }
+        else if (contains(argument, {"-i", "--invert"}))
+            Configuration::set_invert(true);
         else
             files.push_back(argument);
     }

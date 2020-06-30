@@ -5,6 +5,7 @@ static int width = 0;
 static int height = 0;
 static int dpi = 96;
 static string source, destination;
+static bool invert = false;
 
 bool Configuration::get_verbose() {
     return verbose;
@@ -52,4 +53,12 @@ string Configuration::get_destination() {
 
 void Configuration::set_destination(string value) {
     destination = value;
+}
+
+bool Configuration::get_invert() {
+    return invert;
+}
+
+void Configuration::set_invert(bool value) {
+    invert = value;
 }

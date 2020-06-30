@@ -100,13 +100,21 @@ ImageHeader Writer::image_header(signed int width, signed int height, signed int
 
 ColourTable Writer::colour_table() {
     ColourTable colour_table {};
+    auto invert = Configuration::get_invert();
 
-    for (int i = 0; i < 256; i++) {
-        auto n = 4 * i;
-
-        colour_table[n] = i;
-        colour_table[n + 1] = i;
-        colour_table[n + 2] = i;
+    if (invert) {
+        for (auto i = 255, n = 0; i >= 0; i--, n += 4) {
+            colour_table[n] = i;
+            colour_table[n + 1] = i;
+            colour_table[n + 2] = i;
+        }
+    }
+    else {
+        for (auto i = 0, n = 0; i < 256; i++, n += 4) {
+            colour_table[n] = i;
+            colour_table[n + 1] = i;
+            colour_table[n + 2] = i;
+        }
     }
 
     return colour_table;

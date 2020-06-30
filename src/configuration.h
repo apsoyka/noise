@@ -17,4 +17,6 @@ class Configuration {
         static void set_source(string);
         static string get_destination();
         static void set_destination(string);
+        static bool get_invert();
+        static void set_invert(bool);
 };
