@@ -1,12 +1,13 @@
-#include "transcoder.h"
+#include "encoder.h"
 #include "configuration.h"
 #include "log.h"
 
-const string Transcoder::tag = "Transcoder";
+const string Encoder::tag = "Encoder";
 
-Bitmap Transcoder::transcode(Blob blob) {
+Bitmap Encoder::encode(Blob blob) {
     auto width = Configuration::get_width();
     auto height = Configuration::get_height();
+    auto dpi = Configuration::get_dpi();
     auto size = blob.size();
 
     // Automatically determine resolution from file size if width and height aren't set.
@@ -18,20 +19,18 @@ Bitmap Transcoder::transcode(Blob blob) {
         height = n;
     }
 
-    auto pixels = new unsigned char *[height];
-
-    for (auto i = 0; i < height; i++)
-        pixels[i] = new unsigned char[width];
+    auto bitmap = Bitmap(width, height, dpi);
 
     // Convert each byte to a pixel.
     for (auto y = 0; y < height; y++) {
         for (auto x = 0; x < width; x++) {
             auto n = y * width + x;
-            pixels[y][x] = n < size ? blob[n] : 0;
+            auto pixel = n < size ? blob[n] : 0;
+            bitmap.assign(pixel, x, y);
         }
     }
 
-    Log::verbose(tag, "Generated an image of " + to_string(width) + 'x' + to_string(height) + " pixels");
+    Log::verbose(tag, "Generated a bitmap of %dx%d pixels with %d dots-per-inch", width, height, dpi);
 
-    return Bitmap {pixels, width, height, static_cast<int>(Configuration::get_dpi() * 39.375)};
+    return bitmap;
 }

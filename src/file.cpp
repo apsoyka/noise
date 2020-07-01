@@ -4,6 +4,7 @@
 #include "log.h"
 
 const string Reader::tag = "Reader";
+const string Writer::tag = "Writer";
 
 Blob Reader::read() {
     ifstream file;
@@ -23,13 +24,11 @@ Blob Reader::read() {
 
         file.close();
 
-        Log::verbose(tag, "Read " + to_string(blob.size()) + " bytes from " + source);
+        Log::verbose(tag, "Read %d bytes from %s", blob.size(), source.c_str());
     }
 
     return blob;
 }
-
-const string Writer::tag = "Writer";
 
 void Writer::write(Bitmap bitmap) {
     ofstream file;
@@ -41,20 +40,24 @@ void Writer::write(Bitmap bitmap) {
 
     // Write all data to file.
     if (file.is_open()) {
-        auto padding = 4 - (bitmap.width % 4);
+        auto width = bitmap.get_width();
+        auto padding = 4 - (width % 4);
 
         if (padding == 4)
             padding = 0;
         else
-            Log::debug(tag, "Adding " + to_string(padding) + " padding bytes to each row");
+            Log::debug(tag, "Adding %d padding bytes to each row", padding);
 
-        auto bitmap_size = (bitmap.width + padding) * bitmap.height;
+        auto height = bitmap.get_height();
+        auto bitmap_size = (width + padding) * height;
         auto offset = 14 + 40 + 1024;
         auto file_size = bitmap_size + offset;
+        auto dpi = bitmap.get_dpi();
+        auto ppm = dpi * 39.375;
 
         // Generate header data.
         auto f_header = file_header(file_size, offset);
-        auto i_header = image_header(bitmap.width, bitmap.height, bitmap.ppm);
+        auto i_header = image_header(width, height, ppm);
         auto palette = colour_palette();
 
         // Write headers to file.
@@ -63,9 +66,9 @@ void Writer::write(Bitmap bitmap) {
         file.write((char *)palette.data(), 1024);
 
         // Write pixel data to file.
-        for (auto y = bitmap.height - 1; y >= 0; y--) {
-            for (auto x = 0; x < bitmap.width; x++)
-                file << bitmap.pixels[y][x];
+        for (auto y = height - 1; y >= 0; y--) {
+            for (auto x = 0; x < width; x++)
+                file << bitmap.at(x, y);
             // Write extra padding bytes if necessary.
             if (padding)
                 for (auto i = 1; i <= padding; i++)
@@ -74,7 +77,7 @@ void Writer::write(Bitmap bitmap) {
 
         file.close();
 
-        Log::verbose(tag, "Wrote " + to_string(file_size) + " bytes to " + destination);
+        Log::verbose(tag, "Wrote %d bytes to %s", file_size, destination.c_str());
     }
 }
 

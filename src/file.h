@@ -1,5 +1,9 @@
+#pragma once
+
+#include <string>
 #include <array>
-#include "utilities.h"
+#include "blob.h"
+#include "bitmap.h"
 
 using namespace std;
 

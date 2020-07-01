@@ -1,6 +1,6 @@
 #include "file.h"
 #include "parser.h"
-#include "transcoder.h"
+#include "encoder.h"
 
 using namespace std;
 
@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
     Parser parser;
     Reader reader;
     Writer writer;
-    Transcoder transcoder;
+    Encoder encoder;
 
     // Parse command line arguments.
     parser.parse(argc, argv);
@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     auto blob = reader.read();
 
     // Convert byte data to pixels.
-    auto bitmap = transcoder.transcode(blob);
+    auto bitmap = encoder.encode(blob);
 
     // Write all image data to file.
     writer.write(bitmap);
