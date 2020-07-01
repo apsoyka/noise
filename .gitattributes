@@ -1,0 +1,6 @@
+random filter=lfs diff=lfs merge=lfs -text
+zeros filter=lfs diff=lfs merge=lfs -text
+ones filter=lfs diff=lfs merge=lfs -text
+incompressible filter=lfs diff=lfs merge=lfs -text
+*.bmp filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
