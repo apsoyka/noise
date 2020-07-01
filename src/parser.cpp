@@ -25,6 +25,7 @@ Format:
   -H,  --height=HEIGHT  set the height in pixels of the image to generate
   -D,  --dpi=DPI        set the dots-per-inch of the image to generate
   -i,  --invert         invert the colour table
+  -c,  --compress       enable RLE compression
 )";
 
 static ExitStatus exit_status;
@@ -70,6 +71,8 @@ void Parser::parse(int argc, char *argv[]) {
         }
         else if (contains(argument, {"-i", "--invert"}))
             Configuration::set_invert(true);
+        else if (contains(argument, {"-c", "--compress"}))
+            Configuration::set_compression(true);
         else
             files.push_back(argument);
     }
