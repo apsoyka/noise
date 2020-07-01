@@ -55,12 +55,12 @@ void Writer::write(Bitmap bitmap) {
         // Generate header data.
         auto f_header = file_header(file_size, offset);
         auto i_header = image_header(bitmap.width, bitmap.height, bitmap.ppm);
-        auto c_table = colour_table();
+        auto palette = colour_palette();
 
         // Write headers to file.
         file.write((char *)&f_header, 14);
         file.write((char *)&i_header, 40);
-        file.write((char *)c_table.data(), 1024);
+        file.write((char *)palette.data(), 1024);
 
         // Write pixel data to file.
         for (auto y = bitmap.height - 1; y >= 0; y--) {
@@ -98,24 +98,25 @@ ImageHeader Writer::image_header(signed int width, signed int height, signed int
     return image_header;
 }
 
-ColourTable Writer::colour_table() {
-    ColourTable colour_table {};
+ColourPalette Writer::colour_palette() {
+    ColourPalette colour_palette {};
+
     auto invert = Configuration::get_invert();
 
     if (invert) {
-        for (auto i = 255, n = 0; i >= 0; i--, n += 4) {
-            colour_table[n] = i;
-            colour_table[n + 1] = i;
-            colour_table[n + 2] = i;
+        for (auto i = 0, n = 255; i < 256; i++, n--) {
+            colour_palette[i].red = n;
+            colour_palette[i].green = n;
+            colour_palette[i].blue = n;
         }
     }
     else {
-        for (auto i = 0, n = 0; i < 256; i++, n += 4) {
-            colour_table[n] = i;
-            colour_table[n + 1] = i;
-            colour_table[n + 2] = i;
+        for (auto i = 0; i < 256; i++) {
+            colour_palette[i].red = i;
+            colour_palette[i].green = i;
+            colour_palette[i].blue = i;
         }
     }
 
-    return colour_table;
+    return colour_palette;
 }

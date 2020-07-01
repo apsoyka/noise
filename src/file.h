@@ -3,7 +3,11 @@
 
 using namespace std;
 
-typedef array <unsigned char, 1024> ColourTable;
+struct ColourPaletteEntry {
+    unsigned char red, blue, green, reserved {0};
+};
+
+typedef array <ColourPaletteEntry, 256> ColourPalette;
 
 #pragma pack(push, 1)
 struct FileHeader {
@@ -45,5 +49,5 @@ class Writer {
         static const string tag;
         FileHeader file_header(unsigned int, unsigned int);
         ImageHeader image_header(signed int, signed int, signed int);
-        ColourTable colour_table();
+        ColourPalette colour_palette();
 };
