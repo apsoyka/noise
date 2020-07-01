@@ -6,6 +6,7 @@ static int height = 0;
 static int dpi = 96;
 static string source, destination;
 static bool invert = false;
+static bool compression = false;
 
 bool Configuration::get_verbose() {
     return verbose;
@@ -61,4 +62,12 @@ bool Configuration::get_invert() {
 
 void Configuration::set_invert(bool value) {
     invert = value;
+}
+
+bool Configuration::get_compression() {
+    return compression;
+}
+
+void Configuration::set_compression(bool value) {
+    compression = value;
 }

@@ -20,4 +20,6 @@ class Configuration {
         static void set_destination(string);
         static bool get_invert();
         static void set_invert(bool);
+        static bool get_compression();
+        static void set_compression(bool);
 };
