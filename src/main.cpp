@@ -19,6 +19,12 @@ int main(int argc, char *argv[]) {
     // Convert byte data to pixels.
     auto bitmap = encoder.encode(blob);
 
+    // Clear input data.
+    delete blob;
+
     // Write all image data to file.
     writer.write(bitmap);
+
+    // Clear bitmap data.
+    delete bitmap;
 }

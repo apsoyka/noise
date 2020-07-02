@@ -41,17 +41,17 @@ struct ImageHeader {
 
 class Reader {
     public:
-        Blob read();
+        Blob *read();
     private:
         static const string tag;
 };
 
 class Writer {
     public:
-        void write(Bitmap);
+        void write(Bitmap *);
     private:
         static const string tag;
         FileHeader file_header(unsigned int, unsigned int);
-        ImageHeader image_header(signed int, signed int, signed int);
+        ImageHeader image_header(signed int, signed int, signed int, bool, unsigned int = 0);
         ColourPalette colour_palette();
 };
