@@ -58,13 +58,18 @@ void Writer::write(Bitmap *bitmap) {
 
         // Generate header data.
         auto f_header = file_header(file_size, offset);
-        auto i_header = image_header(width, height, ppm, compressed, data_size);
-        auto palette = colour_palette();
+        auto i_header = compressed ? image_header(width, height, ppm, data_size) : image_header(width, height, ppm);
+        auto invert = Configuration::get_invert();
+        auto palette = colour_palette(invert);
 
         // Write headers to file.
-        file.write((char *)&f_header, 14);
-        file.write((char *)&i_header, 40);
-        file.write((char *)palette.data(), 1024);
+        file.write((char *)f_header, 14);
+        file.write((char *)i_header, 40);
+        file.write((char *)palette->data(), 1024);
+
+        delete f_header;
+        delete i_header;
+        delete palette;
 
         if (compressed) {
             // Write each byte of compressed data to file.
@@ -91,47 +96,56 @@ void Writer::write(Bitmap *bitmap) {
     }
 }
 
-FileHeader Writer::file_header(unsigned int file_size, unsigned int offset) {
-    FileHeader file_header;
+FileHeader *Writer::file_header(unsigned int file_size, unsigned int offset) {
+    auto header = new FileHeader;
 
-    file_header.file_size = file_size;
-    file_header.offset = offset;
+    header->file_size = file_size;
+    header->offset = offset;
 
-    return file_header;
+    return header;
 }
 
-ImageHeader Writer::image_header(signed int width, signed int height, signed int ppm, bool compressed, unsigned int size) {
-    ImageHeader image_header;
+ImageHeader *Writer::image_header(signed int width, signed int height, signed int ppm) {
+    auto header = new ImageHeader;
 
-    image_header.width = width;
-    image_header.height = height;
-    image_header.compression = compressed;
-    image_header.image_size = compressed ? size : 0;
-    image_header.horizontal_resolution = ppm;
-    image_header.vertical_resolution = ppm;
+    header->width = width;
+    header->height = height;
+    header->horizontal_resolution = ppm;
+    header->vertical_resolution = ppm;
 
-    return image_header;
+    return header;
 }
 
-ColourPalette Writer::colour_palette() {
-    ColourPalette colour_palette {};
+ImageHeader *Writer::image_header(signed int width, signed int height, signed int ppm, unsigned int size) {
+    auto header = image_header(width, height, ppm);
 
-    auto invert = Configuration::get_invert();
+    header->compression = 1;
+    header->image_size = size;
+
+    return header;
+}
+
+ColourPalette *Writer::colour_palette(bool invert) {
+    auto palette = new ColourPalette {};
 
     if (invert) {
         for (auto i = 0, n = 255; i < 256; i++, n--) {
-            colour_palette[i].red = n;
-            colour_palette[i].green = n;
-            colour_palette[i].blue = n;
+            auto entry = &palette->at(i);
+
+            entry->red = n;
+            entry->green = n;
+            entry->blue = n;
         }
     }
     else {
         for (auto i = 0; i < 256; i++) {
-            colour_palette[i].red = i;
-            colour_palette[i].green = i;
-            colour_palette[i].blue = i;
+            auto entry = &palette->at(i);
+
+            entry->red = i;
+            entry->green = i;
+            entry->blue = i;
         }
     }
 
-    return colour_palette;
+    return palette;
 }

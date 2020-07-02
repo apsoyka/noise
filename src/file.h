@@ -51,7 +51,8 @@ class Writer {
         void write(Bitmap *);
     private:
         static const string tag;
-        FileHeader file_header(unsigned int, unsigned int);
-        ImageHeader image_header(signed int, signed int, signed int, bool, unsigned int = 0);
-        ColourPalette colour_palette();
+        FileHeader *file_header(unsigned int, unsigned int);
+        ImageHeader *image_header(signed int, signed int, signed int);
+        ImageHeader *image_header(signed int, signed int, signed int, unsigned int);
+        ColourPalette *colour_palette(bool);
 };
