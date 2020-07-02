@@ -107,7 +107,7 @@ ImageHeader Writer::image_header(signed int width, signed int height, signed int
     image_header.width = width;
     image_header.height = height;
     image_header.compression = compressed;
-    image_header.image_size = size;
+    image_header.image_size = compressed ? size : 0;
     image_header.horizontal_resolution = ppm;
     image_header.vertical_resolution = ppm;
 
