@@ -7,6 +7,7 @@ Perform visual analysis of data entropy using this command-line tool.
 - Generate a bitmap image from any input data.
 - Specify resolution and dots-per-inch for generated images.
 - Invert the colour palette.
+- Compress images using run-length encoding.
 
 # Examples
 
