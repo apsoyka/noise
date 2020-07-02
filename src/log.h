@@ -42,7 +42,9 @@ class Log {
 
         template <typename... Types>
         static void debug(string tag, string format, Types... arguments) {
+            #ifdef NDEBUG
             println(DEBUG, tag, format, arguments...);
+            #endif
         }
 
         template <typename... Types>
@@ -56,12 +58,6 @@ class Log {
 
             if (priority == VERBOSE)
                 proceed = Configuration::get_verbose();
-            
-            if (priority == DEBUG) {
-                #ifndef NDEBUG
-                proceed = false;
-                #endif
-            }
 
             if (proceed) {
                 format = priorities.at(priority) + '/' + tag + ": " + format;
