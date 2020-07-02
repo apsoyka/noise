@@ -53,7 +53,7 @@ RLE8Bitmap *Encoder::encode_rle8(Blob *blob, int width, int height, int dpi) {
     auto bitmap = new RLE8Bitmap(width, height, dpi);
     auto input_size = blob->size();
 
-    for (auto y = 0; y < height; y++) {
+    for (auto y = height - 1; y >= 0; y--) {
         auto input = new unsigned char[width] {};
 
         // Read a row into memory.
@@ -88,7 +88,7 @@ RLE8Bitmap *Encoder::encode_rle8(Blob *blob, int width, int height, int dpi) {
         bitmap->push_back(0);
 
         // Write EOL or EOF bytes.
-        if (y == height -1)
+        if (y == 0)
             bitmap->push_back(1);
         else
             bitmap->push_back(0);

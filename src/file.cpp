@@ -68,8 +68,7 @@ void Writer::write(Bitmap *bitmap) {
 
         if (compressed) {
             // Write each byte of compressed data to file.
-            // for (auto i = data_size - 1; i >= 0; i--)
-            for (auto i = 0; i < data_size - 1; i++)
+            for (auto i = 0; i < data_size; i++)
                 file << bitmap->at(i);
         }
         else {
