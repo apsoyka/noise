@@ -42,7 +42,7 @@ class Log {
 
         template <typename... Types>
         static void debug(string tag, string format, Types... arguments) {
-            #ifdef NDEBUG
+            #ifndef NDEBUG
             println(DEBUG, tag, format, arguments...);
             #endif
         }
