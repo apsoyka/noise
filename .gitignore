@@ -1,5 +1,4 @@
 .vscode/
-include/
-temp/
-[dD]ebug/
-[rR]elease/
+[iI]nclude/
+[tT]emp/
+[bB]uild*
