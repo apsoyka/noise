@@ -4,8 +4,12 @@ set(CMAKE_CXX_STANDARD 11)
 
 project(noise VERSION 0.0.0 LANGUAGES CXX)
 
-include_directories(include)
+add_subdirectory(external/cxxopts)
+
+find_package(cxxopts)
 
 file(GLOB SOURCES src/*.cpp)
 
 add_executable(noise ${SOURCES})
+
+target_link_libraries(noise cxxopts)
