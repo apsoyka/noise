@@ -11,6 +11,8 @@ using cxxopts::Options;
 using cxxopts::value;
 using cxxopts::OptionParseException;
 using spdlog::error;
+using spdlog::set_level;
+using spdlog::level::level_enum;
 
 static const string tag = "Configuration";
 static const string program_name = "Noise";
@@ -66,7 +68,9 @@ void Configuration::parse(int argc, char *argv[]) {
         }
 
         if (result.count("verbose"))
-            verbose = true;
+            set_level(level_enum::info);
+        else
+            set_level(level_enum::warn);
 
         if (result.count("width"))
             width = result["width"].as<int>();
@@ -92,6 +96,10 @@ void Configuration::parse(int argc, char *argv[]) {
         else {
             exit(1);
         }
+
+        #ifndef NDEBUG
+        set_level(level_enum::debug);
+        #endif
     }
     catch (OptionParseException exception) {
         error(exception.what());
