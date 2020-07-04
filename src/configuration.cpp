@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
 #include "configuration.h"
-#include "log.h"
 #include "cxxopts.hpp"
+#include "spdlog/spdlog.h"
 
 using std::cout;
 using std::endl;
@@ -10,6 +10,7 @@ using std::vector;
 using cxxopts::Options;
 using cxxopts::value;
 using cxxopts::OptionParseException;
+using spdlog::error;
 
 static const string tag = "Configuration";
 static const string program_name = "Noise";
@@ -89,12 +90,11 @@ void Configuration::parse(int argc, char *argv[]) {
             destination = strings[1];
         }
         else {
-            Log::error(tag, "Missing input or output file path argument");
             exit(1);
         }
     }
     catch (OptionParseException exception) {
-        Log::error(tag, exception.what());
+        error(exception.what());
         exit(1);
     }
 }

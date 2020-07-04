@@ -1,7 +1,10 @@
 #include <fstream>
 #include "file.h"
 #include "configuration.h"
-#include "log.h"
+#include "spdlog/spdlog.h"
+
+using spdlog::debug;
+using spdlog::info;
 
 const string Reader::tag = "Reader";
 const string Writer::tag = "Writer";
@@ -24,7 +27,7 @@ Blob *Reader::read() {
 
         file.close();
 
-        Log::verbose(tag, "Read %d bytes from %s", blob->size(), source.c_str());
+        info("Read {0:d} bytes from {1}", blob->size(), source);
     }
 
     return blob;
@@ -46,7 +49,7 @@ void Writer::write(Bitmap *bitmap) {
         if (padding == 4)
             padding = 0;
         else
-            Log::debug(tag, "Adding %d padding bytes to each row", padding);
+            debug("Adding {0:d} padding bytes to each row", padding);
 
         auto height = bitmap->get_height();
         auto dpi = bitmap->get_dpi();
@@ -92,7 +95,7 @@ void Writer::write(Bitmap *bitmap) {
 
         file.close();
 
-        Log::verbose(tag, "Wrote %d bytes to %s", file_size, destination.c_str());
+        info("Wrote {0:d} bytes to {1}", file_size, destination);
     }
 }
 

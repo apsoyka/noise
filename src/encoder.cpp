@@ -1,6 +1,8 @@
 #include "encoder.h"
 #include "configuration.h"
-#include "log.h"
+#include "spdlog/spdlog.h"
+
+using spdlog::info;
 
 const string Encoder::tag = "Encoder";
 
@@ -28,7 +30,7 @@ Bitmap *Encoder::encode(Blob *blob) {
     else
         bitmap = encode_rgb(blob, width, height, dpi);
 
-    Log::verbose(tag, "Generated a bitmap of %dx%d pixels with %d dots-per-inch", width, height, dpi);
+    info("Generated a bitmap of {0:d}x{1:d} pixels and {2:d} dots-per-inch", width, height, dpi);
 
     return bitmap;
 }
@@ -99,7 +101,7 @@ RLE8Bitmap *Encoder::encode_rle8(Blob *blob, int width, int height, int dpi) {
     double output_size = bitmap->size();
     auto ratio = (output_size / input_size) * 100;
 
-    Log::verbose(tag, "Encoded image using RLE8 with a ratio of %.2f%%", ratio);
+    info("Encoded image using RLE8 with a ratio of {0:f}%", ratio);
 
     return bitmap;
 }
