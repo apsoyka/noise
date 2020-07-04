@@ -1,4 +1,19 @@
+#include <iostream>
+#include <vector>
 #include "configuration.h"
+#include "log.h"
+#include "cxxopts.hpp"
+
+using std::cout;
+using std::endl;
+using std::vector;
+using cxxopts::Options;
+using cxxopts::value;
+using cxxopts::OptionParseException;
+
+static const string tag = "Configuration";
+static const string program_name = "Noise";
+static const string program_description = "A visual entropy analysis tool";
 
 static bool verbose = false;
 static int width = 0;
@@ -8,66 +23,110 @@ static string source, destination;
 static bool invert = false;
 static bool compression = false;
 
-bool Configuration::get_verbose() {
-    return verbose;
+void Configuration::parse(int argc, char *argv[]) {
+    if (argc < 2)
+        exit(1);
+
+    auto options = Options(program_name, program_description);
+
+    options.add_options()
+    ("positional", "input and output file paths", value<vector<string>>());
+
+    options.add_options("Startup")
+    ("V,version", "display the version of Noise and exit")
+    ("h,help", "print this help");
+
+    options.add_options("Logging")
+    ("v,verbose", "be verbose (this is the default)");
+
+    options.add_options("Image")
+    ("W,width", "the number of horizontal pixels", value<int>()->default_value("0"))
+    ("H,height", "the number of vertical pixels", value<int>()->default_value("0"))
+    ("D,dpi", "the number of dots-per-inch", value<int>()->default_value("96"));
+
+    options.add_options("Format")
+    ("I,invert", "invert the colour table")
+    ("c,compress", "enable run-length encoding");
+
+    options.positional_help("SOURCE DEST");
+    options.parse_positional({"positional"});
+
+    try {
+        auto result = options.parse(argc, argv);
+    
+        if (result.count("help")) {
+            cout << options.help({"", "Startup", "Logging", "Image", "Format"}) << endl;
+            exit(0);
+        }
+
+        if (result.count("version")) {
+            cout << "0.0.0" << endl;
+            exit(0);
+        }
+
+        if (result.count("verbose"))
+            verbose = true;
+
+        if (result.count("width"))
+            width = result["width"].as<int>();
+
+        if (result.count("height"))
+            height = result["height"].as<int>();
+
+        if (result.count("dpi"))
+            dpi = result["dpi"].as<int>();
+
+        if (result.count("invert"))
+            invert = true;
+
+        if (result.count("compress"))
+            compression = true;
+
+        if (result.count("positional") == 2) {
+            auto strings = result["positional"].as<vector<string>>();
+
+            source = strings[0];
+            destination = strings[1];
+        }
+        else {
+            Log::error(tag, "Missing input or output file path argument");
+            exit(1);
+        }
+    }
+    catch (OptionParseException exception) {
+        Log::error(tag, exception.what());
+        exit(1);
+    }
 }
 
-void Configuration::set_verbose(bool value) {
-    verbose = value;
+bool Configuration::get_verbose() {
+    return verbose;
 }
 
 int Configuration::get_width() {
     return width;
 }
 
-void Configuration::set_width(int value) {
-    width = value;
-}
-
 int Configuration::get_height() {
     return height;
-}
-
-void Configuration::set_height(int value) {
-    height = value;
 }
 
 int Configuration::get_dpi() {
     return dpi;
 }
 
-void Configuration::set_dpi(int value) {
-    dpi = value;
-}
-
 string Configuration::get_source() {
     return source;
-}
-
-void Configuration::set_source(string value) {
-    source = value;
 }
 
 string Configuration::get_destination() {
     return destination;
 }
 
-void Configuration::set_destination(string value) {
-    destination = value;
-}
-
 bool Configuration::get_invert() {
     return invert;
 }
 
-void Configuration::set_invert(bool value) {
-    invert = value;
-}
-
 bool Configuration::get_compression() {
     return compression;
-}
-
-void Configuration::set_compression(bool value) {
-    compression = value;
 }
