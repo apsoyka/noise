@@ -8,6 +8,7 @@ Perform visual analysis of data entropy using this command-line tool.
 - Specify resolution and dots-per-inch for generated images.
 - Invert the colour palette.
 - Compress images using run-length encoding.
+- Scale images up or down using nearest-neighbour.
 
 # Examples
 

@@ -4,65 +4,100 @@
 
 using spdlog::info;
 
-const string Encoder::tag = "Encoder";
-
 Bitmap *Encoder::encode(Blob *blob) {
+    // Automatically determine resolution from file size if width and height aren't set.
+    auto size = blob->size();
+    auto square = sqrt(size);
+    auto rounded = ceil(square);
+    auto resolution = Resolution {(int)rounded, (int)rounded};
+
+    // Generate an RGB bitmap from the input bytes.
+    auto dpi = Configuration::get_dpi();
+    Bitmap *bitmap = encode_rgb(blob, resolution, dpi);
     auto width = Configuration::get_width();
     auto height = Configuration::get_height();
-    auto dpi = Configuration::get_dpi();
-    auto compress = Configuration::get_compression();
-    auto size = blob->size();
 
-    // Automatically determine resolution from file size if width and height aren't set.
-    if (width < 1 || height < 1) {
-        auto square = sqrt(size);
-        auto n = ceil(square);
+    // Scale the generated bitmap if necessary.
+    if ((width != rounded || height != rounded) && (width > 0 && height > 0)) {
+        auto original = resolution;
 
-        width = n;
-        height = n;
+        resolution = Resolution {width, height};
+
+        auto scaled = scale(bitmap, original, resolution, dpi);
+
+        delete bitmap;
+
+        bitmap = scaled;
     }
 
-    Bitmap *bitmap = nullptr;
+    auto compress = Configuration::get_compression();
 
     // Return an appropriately encoded bitmap image.
-    if (compress)
-        bitmap = encode_rle8(blob, width, height, dpi);
-    else
-        bitmap = encode_rgb(blob, width, height, dpi);
+    if (compress) {
+        auto compressed = encode_rle8(bitmap, dpi);
 
-    info("Generated a bitmap of {0:d}x{1:d} pixels and {2:d} dots-per-inch", width, height, dpi);
+        delete bitmap;
+
+        bitmap = compressed;
+    }
+
+    info("Generated a bitmap of {0:d}x{1:d} pixels and {2:d} dots-per-inch", resolution.width, resolution.height, dpi);
 
     return bitmap;
 }
 
-RGBBitmap *Encoder::encode_rgb(Blob *blob, int width, int height, int dpi) {
-    auto bitmap = new RGBBitmap(width, height, dpi);
-    auto size = blob->size();
+Bitmap *Encoder::scale(Bitmap *input, Resolution original, Resolution scaled, int dpi) {
+    auto output = new RGBBitmap(scaled.width, scaled.height, dpi);
+    auto x_ratio = (double)original.width / (double)scaled.width;
+    auto y_ratio = (double)original.height / (double)scaled.height;
+    double px, py; 
 
-    // Convert each byte to a pixel.
-    for (auto y = 0; y < height; y++) {
-        for (auto x = 0; x < width; x++) {
-            auto position = y * width + x;
-            auto pixel = position < size ? blob->at(position) : 0;
-            bitmap->at(x, y) = pixel;
+    for (auto y = 0; y < scaled.height; y++) {
+        for (int x = 0; x < scaled.width; x++) {
+            px = floor(x * x_ratio);
+            py = floor(y * y_ratio);
+            output->at(x, y) = input->at((int)px, (int)py);
         }
     }
 
-    return bitmap;
+    auto ratio = ((double)scaled.width / (double)original.width) * ((double)scaled.height / (double)original.height) * 100;
+
+    info("Scaled the bitmap image by {0:.2f}%", ratio);
+
+    return output;
 }
 
-RLE8Bitmap *Encoder::encode_rle8(Blob *blob, int width, int height, int dpi) {
-    auto bitmap = new RLE8Bitmap(width, height, dpi);
-    auto input_size = blob->size();
+Bitmap *Encoder::encode_rgb(Blob *input, Resolution resolution, int dpi) {
+    auto output = new RGBBitmap(resolution.width, resolution.height, dpi);
+    auto size = input->size();
+
+    // Convert each byte to a pixel.
+    for (auto y = 0; y < resolution.height; y++) {
+        for (auto x = 0; x < resolution.width; x++) {
+            auto position = y * resolution.width + x;
+            auto pixel = position < (int)size ? input->at(position) : 0;
+
+            output->at(x, y) = (unsigned char)pixel;
+        }
+    }
+
+    return output;
+}
+
+Bitmap *Encoder::encode_rle8(Bitmap *input, int dpi) {
+    auto input_size = input->size();
+    auto width = input->get_width();
+    auto height = input->get_height();
+    auto output = new RLE8Bitmap(width, height, dpi);
 
     for (auto y = height - 1; y >= 0; y--) {
-        auto input = new unsigned char[width] {};
+        auto row = new unsigned char[width] {};
 
         // Read a row into memory.
         for (auto x = 0; x < width; x++) {
             auto position = y * width + x;
 
-            input[x] = position < input_size ? blob->at(position) : 0;
+            row[x] = position < input_size ? input->at(position) : 0;
         }
 
         auto x = 0;
@@ -71,37 +106,38 @@ RLE8Bitmap *Encoder::encode_rle8(Blob *blob, int width, int height, int dpi) {
         // Iterate over a row.
         while (true) {
             auto count = 0;
-            auto pixel = input[position];
+            auto pixel = row[position];
 
             // Count the number of repeated bytes.
-            while (position < width && pixel == input[position] && count < 255) {
+            while (position < width && pixel == row[position] && count < 255) {
                 position++;
                 count++;
             }
 
-            bitmap->push_back(count);
-            bitmap->push_back(pixel);
+            output->push_back(count);
+            output->push_back(pixel);
             x += 2;
 
             if (position == width)
                 break;
         }
 
-        bitmap->push_back(0);
+        // Write escape byte.
+        output->push_back(0);
 
-        // Write EOL or EOF bytes.
+        // Write EOL or EOF byte.
         if (y == 0)
-            bitmap->push_back(1);
+            output->push_back(1);
         else
-            bitmap->push_back(0);
+            output->push_back(0);
 
-        delete[] input;
+        delete[] row;
     }
 
-    double output_size = bitmap->size();
-    auto ratio = (output_size / input_size) * 100;
+    auto output_size = output->size();
+    auto ratio = ((double)output_size / (double)input_size) * 100;
 
-    info("Encoded image using RLE8 with a ratio of {0:f}%", ratio);
+    info("Encoded image using RLE8 with a ratio of {0:.2f}%", ratio);
 
-    return bitmap;
+    return output;
 }
