@@ -19,3 +19,11 @@ Path      : example/random
 ```
 
 ![Random](images/random.bmp)
+
+```
+Algorithm : MD5
+Hash      : B34E147045FDB70B6978BB9EAF0FE9C2
+Path      : example/audio.wav
+```
+
+![Audio](images/audio.bmp)
