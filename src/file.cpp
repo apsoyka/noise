@@ -45,16 +45,16 @@ void Writer::write(Bitmap *bitmap) {
     if (file.is_open()) {
         auto width = bitmap->get_width();
         auto padding = 4 - (width % 4);
+        auto compressed = bitmap->is_compressed();
 
         if (padding == 4)
             padding = 0;
-        else
+        else if (!compressed)
             debug("Adding {0:d} padding bytes to each row", padding);
 
         auto height = bitmap->get_height();
         auto dpi = bitmap->get_dpi();
         auto ppm = dpi * 39.375;
-        auto compressed = bitmap->is_compressed();
         auto data_size = compressed ? bitmap->size() : bitmap->size() + (padding * width);
         auto offset = 14 + 40 + 1024;
         auto file_size = data_size + offset;
