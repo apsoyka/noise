@@ -1,6 +1,8 @@
 [submodule "external/cxxopts"]
 	path = external/cxxopts
-	url = git@github.com:jarro2783/cxxopts.git
+	url = https://github.com/jarro2783/cxxopts.git
+	branch = v2.2.0
 [submodule "external/spdlog"]
 	path = external/spdlog
-	url = git@github.com:gabime/spdlog.git
+	url = https://github.com/gabime/spdlog.git
+	branch = v1.7.0
