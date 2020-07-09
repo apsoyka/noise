@@ -3,8 +3,6 @@
 #include <vector>
 #include "blob.h"
 
-using namespace std;
-
 class Bitmap {
     public:
         ~Bitmap();

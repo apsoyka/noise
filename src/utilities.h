@@ -2,7 +2,7 @@
 
 #include <string>
 
-using namespace std;
+using std::string;
 
 string &ltrim(string &string, const std::string characters = "\t\n\v\f\r ");
 

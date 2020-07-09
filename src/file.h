@@ -5,7 +5,8 @@
 #include "blob.h"
 #include "bitmap.h"
 
-using namespace std;
+using std::string;
+using std::array;
 
 struct ColourPaletteEntry {
     unsigned char red, blue, green, reserved {0};

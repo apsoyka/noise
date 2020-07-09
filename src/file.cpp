@@ -3,6 +3,9 @@
 #include "configuration.h"
 #include "spdlog/spdlog.h"
 
+using std::ifstream;
+using std::ofstream;
+using std::ios;
 using spdlog::debug;
 using spdlog::info;
 
@@ -61,7 +64,7 @@ void Writer::write(Bitmap *bitmap) {
 
         // Generate header data.
         auto f_header = file_header(file_size, offset);
-        auto i_header = compressed ? image_header(width, height, ppm, data_size) : image_header(width, height, ppm);
+        auto i_header = compressed ? image_header(width, height, (int)ppm, data_size) : image_header(width, height, (int)ppm);
         auto invert = Configuration::get_invert();
         auto palette = colour_palette(invert);
 

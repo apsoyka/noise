@@ -2,6 +2,6 @@
 
 #include <vector>
 
-using namespace std;
+using std::vector;
 
 typedef vector <unsigned char> Blob;

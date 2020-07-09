@@ -5,6 +5,11 @@
 using spdlog::info;
 
 Bitmap *Encoder::encode(Blob *blob) {
+    auto dpi = Configuration::get_dpi();
+    auto width = Configuration::get_width();
+    auto height = Configuration::get_height();
+    auto compress = Configuration::get_compression();
+
     // Automatically determine resolution from file size if width and height aren't set.
     auto size = blob->size();
     auto square = sqrt(size);
@@ -12,10 +17,7 @@ Bitmap *Encoder::encode(Blob *blob) {
     auto resolution = Resolution {(int)rounded, (int)rounded};
 
     // Generate an RGB bitmap from the input bytes.
-    auto dpi = Configuration::get_dpi();
     Bitmap *bitmap = encode_rgb(blob, resolution, dpi);
-    auto width = Configuration::get_width();
-    auto height = Configuration::get_height();
 
     // Scale the generated bitmap if necessary.
     if ((width != rounded || height != rounded) && (width > 0 && height > 0)) {
@@ -29,8 +31,6 @@ Bitmap *Encoder::encode(Blob *blob) {
 
         bitmap = scaled;
     }
-
-    auto compress = Configuration::get_compression();
 
     // Return an appropriately encoded bitmap image.
     if (compress) {
