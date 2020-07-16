@@ -165,9 +165,11 @@ Bitmap *Encoder::encode_rle8(Bitmap *input) {
         }
 
         // Write end of line bytes.
-        output->push_back(0);
-        output->push_back(0);
-
+        if (y != 0) {
+            output->push_back(0);
+            output->push_back(0);
+        }
+        
         delete row;
         delete lengths;
     }
