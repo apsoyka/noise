@@ -16,8 +16,8 @@ int Bitmap::get_dpi() {
     return dpi;
 }
 
-unsigned char *Bitmap::data() {
-    return pixels->data();
+Blob *Bitmap::data() {
+    return pixels;
 }
 
 unsigned char &Bitmap::at(int i) {
