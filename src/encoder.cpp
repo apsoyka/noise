@@ -91,33 +91,27 @@ Bitmap *Encoder::encode_rle8(Bitmap *input, int dpi) {
     auto output = new RLE8Bitmap(width, height, dpi);
 
     for (auto y = height - 1; y >= 0; y--) {
-        auto row = new unsigned char[width] {};
-
-        // Read a row into memory.
-        for (auto x = 0; x < width; x++) {
-            auto position = y * width + x;
-
-            row[x] = input->at(position);
-        }
-
+        auto start = y * width;
+        auto end = start + width - 1;
+        auto row = input->slice(start, end);
         auto count = 0;
 
         for (auto x = 0; x < width; x += count) {
             count = 0;
 
             // Count the number of repeated bytes.
-            while (x + count < width && count < 255 && row[x + count] == row[x])
+            while (x + count < width && count < 255 && row->at(x + count) == row->at(x))
                 count++;
 
             output->push_back(count);
-            output->push_back(row[x]);
+            output->push_back(row->at(x));
         }
 
         // Write end of line bytes.
         output->push_back(0);
         output->push_back(0);
 
-        delete[] row;
+        delete row;
     }
 
     // Write end of file bytes.

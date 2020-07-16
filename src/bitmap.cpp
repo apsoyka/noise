@@ -20,6 +20,10 @@ Blob *Bitmap::data() {
     return pixels;
 }
 
+Blob *Bitmap::slice(int start, int end) {
+    return new Blob(pixels->cbegin() + start, pixels->cbegin() + end + 1);
+}
+
 unsigned char &Bitmap::at(int i) {
     return pixels->at(i);
 }

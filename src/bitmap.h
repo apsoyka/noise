@@ -10,6 +10,7 @@ class Bitmap {
         int get_height();
         int get_dpi();
         Blob *data();
+        Blob *slice(int, int);
         unsigned char &at(int);
         unsigned char &at(int, int);
         void push_back(unsigned char);
