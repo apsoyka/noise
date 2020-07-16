@@ -97,42 +97,32 @@ Bitmap *Encoder::encode_rle8(Bitmap *input, int dpi) {
         for (auto x = 0; x < width; x++) {
             auto position = y * width + x;
 
-            row[x] = position < input_size ? input->at(position) : 0;
+            row[x] = input->at(position);
         }
 
-        auto x = 0;
-        auto position = 0;
+        auto count = 0;
 
-        // Iterate over a row.
-        while (true) {
-            auto count = 0;
-            auto pixel = row[position];
+        for (auto x = 0; x < width; x += count) {
+            count = 0;
 
             // Count the number of repeated bytes.
-            while (position < width && pixel == row[position] && count < 255) {
-                position++;
+            while (x + count < width && count < 255 && row[x + count] == row[x])
                 count++;
-            }
 
             output->push_back(count);
-            output->push_back(pixel);
-            x += 2;
-
-            if (position == width)
-                break;
+            output->push_back(row[x]);
         }
 
-        // Write escape byte.
+        // Write end of line bytes.
         output->push_back(0);
-
-        // Write EOL or EOF byte.
-        if (y == 0)
-            output->push_back(1);
-        else
-            output->push_back(0);
+        output->push_back(0);
 
         delete[] row;
     }
+
+    // Write end of file bytes.
+    output->push_back(0);
+    output->push_back(1);
 
     auto output_size = output->size();
     auto ratio = ((double)output_size / (double)input_size) * 100;
