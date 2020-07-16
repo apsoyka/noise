@@ -15,7 +15,7 @@ class Encoder {
         Bitmap *encode(Blob *);
     private:
         static const string tag;
-        Bitmap *scale(Bitmap *, Resolution, Resolution, int);
+        Bitmap *scale(Bitmap *, Resolution, Resolution);
         Bitmap *encode_rgb(Blob *, Resolution, int);
-        Bitmap *encode_rle8(Bitmap *, int);
+        Bitmap *encode_rle8(Bitmap *);
 };

@@ -25,7 +25,7 @@ Bitmap *Encoder::encode(Blob *blob) {
 
         resolution = Resolution {width, height};
 
-        auto scaled = scale(bitmap, original, resolution, dpi);
+        auto scaled = scale(bitmap, original, resolution);
 
         delete bitmap;
 
@@ -34,7 +34,7 @@ Bitmap *Encoder::encode(Blob *blob) {
 
     // Return an appropriately encoded bitmap image.
     if (compress) {
-        auto compressed = encode_rle8(bitmap, dpi);
+        auto compressed = encode_rle8(bitmap);
 
         delete bitmap;
 
@@ -46,8 +46,8 @@ Bitmap *Encoder::encode(Blob *blob) {
     return bitmap;
 }
 
-Bitmap *Encoder::scale(Bitmap *input, Resolution original, Resolution scaled, int dpi) {
-    auto output = new RGBBitmap(scaled.width, scaled.height, dpi);
+Bitmap *Encoder::scale(Bitmap *input, Resolution original, Resolution scaled) {
+    auto output = new RGBBitmap(scaled.width, scaled.height, input->get_dpi());
     auto x_ratio = (double)original.width / (double)scaled.width;
     auto y_ratio = (double)original.height / (double)scaled.height;
     double px, py; 
@@ -84,11 +84,11 @@ Bitmap *Encoder::encode_rgb(Blob *input, Resolution resolution, int dpi) {
     return output;
 }
 
-Bitmap *Encoder::encode_rle8(Bitmap *input, int dpi) {
+Bitmap *Encoder::encode_rle8(Bitmap *input) {
     auto input_size = input->size();
     auto width = input->get_width();
     auto height = input->get_height();
-    auto output = new RLE8Bitmap(width, height, dpi);
+    auto output = new RLE8Bitmap(width, height, input->get_dpi());
 
     for (auto y = height - 1; y >= 0; y--) {
         auto start = y * width;
