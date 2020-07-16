@@ -10,6 +10,14 @@ Perform visual analysis of data entropy using this command-line tool.
 - Compress images using run-length encoding.
 - Scale images up or down using nearest-neighbour.
 
+# Compression
+
+Noise supports compressing bitmap data using the RLE8 algorithm.
+
+Please note that, due to the [pigeonhole principle](https://en.wikipedia.org/wiki/Pigeonhole_principle), enabling compression may in fact slightly *increase* the size of the resulting bitmap file.
+
+Only enable compression if you are sure that your input data is compressible!
+
 # Examples
 
 ```
