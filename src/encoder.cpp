@@ -94,17 +94,74 @@ Bitmap *Encoder::encode_rle8(Bitmap *input) {
         auto start = y * width;
         auto end = start + width - 1;
         auto row = input->slice(start, end);
+        auto lengths = new Blob(width);
         auto count = 0;
 
+        // Count the number of repeated bytes.
         for (auto x = 0; x < width; x += count) {
             count = 0;
 
-            // Count the number of repeated bytes.
             while (x + count < width && count < 255 && row->at(x + count) == row->at(x))
                 count++;
 
-            output->push_back(count);
-            output->push_back(row->at(x));
+            lengths->at(x) = count;
+        }
+
+        for (auto x = 0; x < width;) {
+            if (lengths->at(x) < 3) {
+                /* Use absolute mode. */
+
+                count = 0;
+
+                while (x + count < width && count < 255 && lengths->at(x + count) < 3)
+                    count += lengths->at(x + count);
+
+                if (count > 255)
+                    count -= 2;
+
+                if (count > 2) {
+                    output->push_back(0);
+
+                    auto n = count;
+
+                    if (n + x > width)
+                        n--;
+
+                    output->push_back(n);
+
+                    for (auto i = x; i < x + count; i++)
+                        output->push_back(row->at(i));
+
+                    if (count % 2)
+                        output->push_back(0);
+                }
+                else {
+                    for (auto i = x; i < x + count; i++) {
+                        auto n = 1;
+
+                        if (n + x > width)
+                            n--;
+
+                        output->push_back(n);
+                        output->push_back(row->at(i));
+                    }
+                }
+
+                x += count;
+            }
+            else {
+                /* Use encoded mode. */
+
+                auto n = lengths->at(x);
+
+                if (n + x > width)
+                    n--;
+
+                output->push_back(n);
+                output->push_back(row->at(x));
+
+                x += lengths->at(x);
+            }
         }
 
         // Write end of line bytes.
@@ -112,6 +169,7 @@ Bitmap *Encoder::encode_rle8(Bitmap *input) {
         output->push_back(0);
 
         delete row;
+        delete lengths;
     }
 
     // Write end of file bytes.
