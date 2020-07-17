@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include "version.h"
 #include "configuration.h"
 #include "cxxopts.hpp"
 #include "spdlog/spdlog.h"
@@ -14,10 +15,6 @@ using spdlog::error;
 using spdlog::set_level;
 using spdlog::level::level_enum;
 
-static const string tag = "Configuration";
-static const string program_name = "Noise";
-static const string program_description = "A visual entropy analysis tool";
-
 static bool verbose = false;
 static int width = 0;
 static int height = 0;
@@ -30,7 +27,7 @@ void Configuration::parse(int argc, char *argv[]) {
     if (argc < 2)
         exit(1);
 
-    auto options = Options(program_name, program_description);
+    auto options = Options(PROJECT_NAME, PROJECT_DESCRIPTION);
 
     options.add_options()
     ("positional", "input and output file paths", value<vector<string>>());
@@ -63,7 +60,7 @@ void Configuration::parse(int argc, char *argv[]) {
         }
 
         if (result.count("version")) {
-            cout << "0.0.0" << endl;
+            cout << PROJECT_VERSION << endl;
             exit(0);
         }
 

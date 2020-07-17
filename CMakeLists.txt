@@ -4,6 +4,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 project(Noise VERSION 0.0.0 DESCRIPTION "A visual entropy analysis tool" LANGUAGES CXX)
 
+configure_file(include/version.h.in version.h)
+
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_CXX_EXTENSIONS OFF)
 
