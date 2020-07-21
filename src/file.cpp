@@ -9,9 +9,6 @@ using std::ios;
 using spdlog::debug;
 using spdlog::info;
 
-const string Reader::tag = "Reader";
-const string Writer::tag = "Writer";
-
 Blob *Reader::read() {
     ifstream file;
 
