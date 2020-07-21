@@ -8,6 +8,7 @@ using std::ofstream;
 using std::ios;
 using spdlog::debug;
 using spdlog::info;
+using spdlog::error;
 
 Blob *Reader::read() {
     ifstream file;
@@ -29,6 +30,8 @@ Blob *Reader::read() {
 
         info("Read {0:d} bytes from {1}", blob->size(), source);
     }
+    else
+        error("Unable to open {0}", source);
 
     return blob;
 }
@@ -49,8 +52,11 @@ void Writer::write(Bitmap *bitmap) {
 
         if (padding == 4)
             padding = 0;
-        else if (!compressed)
+        
+        #ifndef NDEBUG
+        if (!compressed)
             debug("Adding {0:d} padding bytes to each row", padding);
+        #endif
 
         auto height = bitmap->get_height();
         auto dpi = bitmap->get_dpi();
@@ -97,6 +103,8 @@ void Writer::write(Bitmap *bitmap) {
 
         info("Wrote {0:d} bytes to {1}", file_size, destination);
     }
+    else
+        error("Unable to open {0}", destination);
 }
 
 FileHeader *Writer::file_header(unsigned int file_size, unsigned int offset) {
