@@ -13,15 +13,17 @@ int main(int argc, char *argv[]) {
     // Read source file into memory.
     auto blob = reader.read();
 
-    // Convert byte data to pixels.
-    auto bitmap = encoder.encode(blob);
+    if (blob->size() > 0) {
+        // Convert byte data to pixels.
+        auto bitmap = encoder.encode(blob);
 
-    // Clear input data.
-    delete blob;
+        // Clear input data.
+        delete blob;
 
-    // Write all image data to file.
-    writer.write(bitmap);
+        // Write all image data to file.
+        writer.write(bitmap);
 
-    // Clear bitmap data.
-    delete bitmap;
+        // Clear bitmap data.
+        delete bitmap;
+    }
 }
