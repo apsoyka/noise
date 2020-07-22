@@ -16,22 +16,28 @@ Blob *Reader::read() {
     auto source = Configuration::get_source();
     auto blob = new Blob {};
 
-    // Open file at the end.
-    file.open(source, ios::in | ios::binary);
+    file.exceptions(ifstream::badbit);
 
-    // Read the file into memory.
-    if (file.is_open()) {
-        char byte;
+    try {
+        // Open file at the end.
+        file.open(source, ios::in | ios::binary);
 
-        while (file.get(byte))
-            blob->push_back(byte);
+        if (file.is_open()) {
+            char byte;
 
-        file.close();
+            while (file.get(byte))
+                blob->push_back(byte);
 
-        info("Read {0:d} bytes from {1}", blob->size(), source);
+            file.close();
+
+            info("Read {0:d} bytes from {1}", blob->size(), source);
+        }
+        else
+            error("Unable to open {0}", source);
     }
-    else
-        error("Unable to open {0}", source);
+    catch (const ifstream::failure &exception) {
+        error(exception.what());
+    }
 
     return blob;
 }
@@ -41,70 +47,77 @@ void Writer::write(Bitmap *bitmap) {
 
     auto destination = Configuration::get_destination();
 
-    // Open file in binary, truncate and output mode.
-    file.open(destination, ios::out | ios::binary | ios::trunc);
+    file.exceptions(ifstream::badbit);
 
-    // Write all data to file.
-    if (file.is_open()) {
-        auto width = bitmap->get_width();
-        auto padding = 4 - (width % 4);
-        auto compressed = bitmap->is_compressed();
+    try {
+        // Open file in binary, truncate and output mode.
+        file.open(destination, ios::out | ios::binary | ios::trunc);
 
-        if (padding == 4)
-            padding = 0;
-        
-        #ifndef NDEBUG
-        if (!compressed)
-            debug("Adding {0:d} padding bytes to each row", padding);
-        #endif
+        // Write all data to file.
+        if (file.is_open()) {
+            auto width = bitmap->get_width();
+            auto padding = 4 - (width % 4);
+            auto compressed = bitmap->is_compressed();
 
-        auto height = bitmap->get_height();
-        auto dpi = bitmap->get_dpi();
-        auto ppm = dpi * 39.375;
-        auto data_size = compressed ? bitmap->size() : bitmap->size() + (padding * width);
-        auto offset = 14 + 40 + 1024;
-        auto file_size = data_size + offset;
+            if (padding == 4)
+                padding = 0;
+            
+            #ifndef NDEBUG
+            if (!compressed)
+                debug("Adding {0:d} padding bytes to each row", padding);
+            #endif
 
-        // Generate header data.
-        auto f_header = file_header(file_size, offset);
-        auto i_header = compressed ? image_header(width, height, (int)ppm, data_size) : image_header(width, height, (int)ppm);
-        auto invert = Configuration::get_invert();
-        auto palette = colour_palette(invert);
+            auto height = bitmap->get_height();
+            auto dpi = bitmap->get_dpi();
+            auto ppm = dpi * 39.375;
+            auto data_size = compressed ? bitmap->size() : bitmap->size() + (padding * width);
+            auto offset = 14 + 40 + 1024;
+            auto file_size = data_size + offset;
 
-        // Write headers to file.
-        file.write((char *)f_header, 14);
-        file.write((char *)i_header, 40);
-        file.write((char *)palette->data(), 1024);
+            // Generate header data.
+            auto f_header = file_header(file_size, offset);
+            auto i_header = compressed ? image_header(width, height, (int)ppm, data_size) : image_header(width, height, (int)ppm);
+            auto invert = Configuration::get_invert();
+            auto palette = colour_palette(invert);
 
-        delete f_header;
-        delete i_header;
-        delete palette;
+            // Write headers to file.
+            file.write((char *)f_header, 14);
+            file.write((char *)i_header, 40);
+            file.write((char *)palette->data(), 1024);
 
-        if (compressed) {
-            // Write each byte of compressed data to file.
-            for (auto i = 0; i < data_size; i++)
-                file << bitmap->at(i);
-        }
-        else {
-            // Write a row of pixel data to file.
-            for (auto y = height - 1; y >= 0; y--) {
-                // Write a column of pixel data to file.
-                for (auto x = 0; x < width; x++)
-                    file << bitmap->at(x, y);
+            delete f_header;
+            delete i_header;
+            delete palette;
 
-                // Write extra padding bytes if necessary.
-                if (padding)
-                    for (auto i = 1; i <= padding; i++)
-                        file << 0;
+            if (compressed) {
+                // Write each byte of compressed data to file.
+                for (auto i = 0; i < data_size; i++)
+                    file << bitmap->at(i);
             }
+            else {
+                // Write a row of pixel data to file.
+                for (auto y = height - 1; y >= 0; y--) {
+                    // Write a column of pixel data to file.
+                    for (auto x = 0; x < width; x++)
+                        file << bitmap->at(x, y);
+
+                    // Write extra padding bytes if necessary.
+                    if (padding)
+                        for (auto i = 1; i <= padding; i++)
+                            file << 0;
+                }
+            }
+
+            file.close();
+
+            info("Wrote {0:d} bytes to {1}", file_size, destination);
         }
-
-        file.close();
-
-        info("Wrote {0:d} bytes to {1}", file_size, destination);
+        else
+            error("Unable to open {0}", destination);
     }
-    else
-        error("Unable to open {0}", destination);
+    catch (const ofstream::failure &exception) {
+        error(exception.what());
+    }
 }
 
 FileHeader *Writer::file_header(unsigned int file_size, unsigned int offset) {
